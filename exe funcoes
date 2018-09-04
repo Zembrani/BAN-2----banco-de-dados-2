@@ -1,0 +1,52 @@
+	CREATE OR REPLACE FUNCTION primeira_funcao() RETURNS void as 
+    $$
+    BEGIN
+    	raise notice 'Olá mundo';
+    	return;
+    END;
+    $$
+    LANGUAGE plpgsql;
+    
+    select primeira_funcao();
+    
+    -- ------------
+    
+    create or replace function multiplica(valor_a real, valor_b real) returns real as
+    $$
+    begin
+    	return valor_a * valor_b;
+    end;
+    $$
+    language plpgsql
+    
+    select multiplica(2,2);
+     
+   -- ------------
+      
+    create or replace function recebeValor(dado anyelement) returns void as
+    $$
+    begin
+    	raise notice 'o dado recebido foi = % ', dado;
+    	return ;
+    end;
+    $$
+    language plpgsql
+    
+    select recebeValor(re);
+    
+    -- ------------
+    
+    create or replace function add(v1 anyelement, v2 anyelement, v3 anyelement) returns anyelement as
+    
+    $$
+    declare
+    	result alias for $0;
+    
+    begin
+    	result :=v1+v2+v3;
+        return result;
+    end;
+    $$
+    language plpgsql;
+    
+    select add(2,2,10)
