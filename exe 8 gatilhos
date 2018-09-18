@@ -1,0 +1,93 @@
+-- 1)Gatilho para impedir a inserção ou atualização de Clientes com o mesmo CPF.
+
+create or replace function verifica_cpf() returns trigger as 
+$$
+begin
+	if tg_op = 'INSERT' then
+        if (select 1 from cliente where cpf = new.cpf) then 
+            raise exception 'CPF repetido: %', new.cpf;
+        end if;
+    elsif tg_op = 'UPDATE' then
+    	if (new.cpf <> old.cpf and (select true from cliente where cpf = new.cpf)) then 
+            raise exception 'CPF repetido: %', new.cpf;
+        end if;
+    end if;
+    return new;
+end;
+$$
+language plpgsql;
+
+-- ---------------------
+
+create trigger verifica_cpf before insert or update on cliente for each row
+				execute procedure verifica_cpf();
+
+-- ---------------------
+
+insert into cliente values (2, '20000220000', 'Paulo', 24, 'Saguaçú', 'Joinville')
+update cliente 
+	set cpf = '20000220000', idade = 20
+    where codc = 2
+
+-- 2)Gatilho para impedir a inserção ou atualização de Mecânicos com idade menor que 20 anos.
+
+create or replace function verifica_idade() returns trigger as 
+$$
+begin
+	if new.idade < 20 then
+		raise exception 'Idade menor que 20 : %', new.idade;
+    end if;
+    return new;
+end;
+$$
+language plpgsql;
+
+-- ---------------------
+
+create trigger verifica_idade before insert or update on mecanico for each row
+				execute procedure verifica_idade();
+
+-- ---------------------
+insert into mecanico values (12, '20000220000', 'Paulo', 19, 'Saguaçú', 'Joinville')
+update mecanico 
+	set idade = 16
+    where codm = 2
+
+-- 3)Gatilho para atribuir um cods (sequencial) para um novo setor inserido.
+
+create sequence setor_cods_seq start 5;
+
+create or replace function verifica_cods() returns trigger as 
+$$
+begin	
+	new.cods = nextval('setor_cods_seq');
+    return new;
+end;
+$$
+language plpgsql;
+
+-- ---------------------
+
+create trigger verifica_cods before insert or update on setor for each row
+				execute procedure verifica_cods();
+
+-- ---------------------
+insert into setor values (12, 'estagiarios')
+
+select * from setor
+update mecanico 
+	set idade = 16
+    where codm = 2
+
+-- 4)Gatilho para impedir a inserção de um mecânico ou cliente com CPF inválido.
+
+-- 5)Gatilho para impedir que um mecânico seja removido caso não exista outro mecânico com a mesma função.
+
+-- 6)Gatilho que ao inserir, atualizar ou remover um mecânico, reflita as mesmas modificações na tabela de Cliente. Em caso de atualização, se o mecânico ainda não existir na tabela de Cliente, deve ser inserido.
+
+-- 7)Gatilho para impedir que um conserto seja inserido na tabela Conserto se o mecânico já realizou mais de 20 horas extras no mês.
+
+-- 8)Gatilho para impedir que mais de 1 conserto seja agendado no mesmo setor na mesma hora. (O set)
+
+-- Nota: Para a implementação dos gatilhos devem ser utilizadas as funções implementadas no exercício 7, quando possível.
+
